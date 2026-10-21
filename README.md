@@ -6,7 +6,7 @@ Branchpoint is a [DeepSeek Harness](https://github.com/deepseek-ai) (DSH) plugin
 
 Long chats degrade. Compaction helps, but it also blurs the thread. Branchpoint gives you a clean branch that still knows where you were.
 
-[![npm](https://img.shields.io/npm/v/dsh-plugin-branchpoint)](https://www.npmjs.com/package/dsh-plugin-branchpoint)
+[![release](https://img.shields.io/github/v/release/TimRad1/dsh-plugin-branchpoint)](https://github.com/TimRad1/dsh-plugin-branchpoint/releases/latest)
 [![license](https://img.shields.io/github/license/TimRad1/dsh-plugin-branchpoint)](LICENSE)
 
 ## What it does
@@ -47,14 +47,16 @@ pages older history before summarizing.
 
 ## Install
 
-From npm:
+Not on npm yet. Install the prebuilt tarball from the latest GitHub release:
 
 ```powershell
+$tgz = "$env:TEMP\branchpoint.tgz"
+Invoke-WebRequest "https://github.com/TimRad1/dsh-plugin-branchpoint/releases/latest/download/branchpoint.tgz" -OutFile $tgz
 & "$env:LOCALAPPDATA\Programs\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd" `
-  plugin --profile desktop add dsh-plugin-branchpoint
+  plugin --profile desktop add ("file:" + ($tgz -replace '\\', '/'))
 ```
 
-Or open **Settings → Plugins** in DSH and install `dsh-plugin-branchpoint` by npm name, GitHub URL, or a `.tgz` archive.
+Or open **Settings → Plugins** in DSH and install the downloaded `.tgz` archive.
 
 Fully quit and relaunch DSH. The desktop profile applies plugin composition at startup (it has no HMR).
 
