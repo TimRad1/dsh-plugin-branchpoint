@@ -1,0 +1,3 @@
+- insert:
+    - id: chat-handoff
+      name: dsh-plugin-chat-handoff

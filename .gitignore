@@ -1,0 +1,14 @@
+node_modules/
+dsh-plugin-chat-handoff-*.tgz
+README.txt
+install.cmd
+install-chat-handoff.ps1
+_front/
+_h2/
+_harness/
+test/
+asar-extract.mjs
+probe.mjs
+test-digest.mjs
+_test-digest.mjs
+*.log
