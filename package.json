@@ -1,8 +1,31 @@
 {
-  "name": "dsh-plugin-chat-handoff",
-  "version": "0.2.4",
+  "name": "dsh-plugin-branchpoint",
+  "version": "0.3.0",
+  "description": "Branchpoint for DeepSeek Harness: fork the current chat into a fresh branch with a compact digest.",
   "type": "module",
   "main": "lib/index.js",
+  "license": "MIT",
+  "author": "TimRad1",
+  "homepage": "https://github.com/TimRad1/dsh-plugin-branchpoint#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TimRad1/dsh-plugin-branchpoint.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TimRad1/dsh-plugin-branchpoint/issues"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "deepseek",
+    "chat",
+    "branch",
+    "fork",
+    "handoff",
+    "context",
+    "session"
+  ],
   "files": [
     "lib",
     "cordis.patch.yml"

@@ -1,8 +1,10 @@
 node_modules/
 dsh-plugin-chat-handoff-*.tgz
+dsh-plugin-branchpoint-*.tgz
 README.txt
 install.cmd
 install-chat-handoff.ps1
+install-branchpoint.ps1
 _front/
 _h2/
 _harness/

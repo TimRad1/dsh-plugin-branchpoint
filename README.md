@@ -1,73 +1,101 @@
-# dsh-plugin-chat-handoff
+# Branchpoint
 
-Плагин для DeepSeek Harness (DSH): кнопка в шапке чата переносит текущую ветку в новую сессию вместе с кратким итогом.
+**Fork the conversation at a clean point.**
 
-## Что делает
+Branchpoint is a [DeepSeek Harness](https://github.com/deepseek-ai) (DSH) plugin that adds a fork button to the chat header. Click it and Branchpoint reads the current branch, distills what matters, and opens a fresh session with that digest already in the composer.
 
-- Добавляет кнопку в слот `conversation.session.header.actions` — рядом с заголовком ветки.
-- По клику догружает историю сессии (`loadOlder`, до двух страниц) и собирает дайджест:
-  - задача (последний вопрос человека);
-  - последний текстовый вывод ассистента;
-  - что решено в последнем завершённом ходе;
-  - что осталось, включая `в работе: <вопрос>`, если последний ход ещё без ответа;
-  - ошибки значимых инструментов, изменённые файлы и команды запуска.
-- Открывает новую сессию и кладёт дайджест в черновик. Автоотправки нет — текст можно проверить и отправить вручную.
+Long chats degrade. Compaction helps, but it also blurs the thread. Branchpoint gives you a clean branch that still knows where you were.
 
-## Установка
+[![npm](https://img.shields.io/npm/v/dsh-plugin-branchpoint)](https://www.npmjs.com/package/dsh-plugin-branchpoint)
+[![license](https://img.shields.io/github/license/TimRad1/dsh-plugin-branchpoint)](LICENSE)
 
-Нужен DSH с профилем `desktop` (или другим, если укажете его явно).
+## What it does
 
-1. Соберите архив из папки плагина:
+- Adds a fork icon to `conversation.session.header.actions`, next to the branch title.
+- Loads up to two older pages of session history when the prompt is outside the current window.
+- Builds a compact digest:
+  - the goal (last human prompt);
+  - the latest assistant conclusion;
+  - what was done in the last completed turn;
+  - what is still open, including `in progress: <prompt>` when the latest turn has no answer yet;
+  - errors from meaningful tools, changed files, versions, commands and key concepts.
+- Opens a new session and puts the digest in the draft. It does **not** send automatically, so you can review it first.
 
-   ```powershell
-   npm pack
-   ```
+## Example digest
 
-   Получится `dsh-plugin-chat-handoff-0.2.4.tgz`.
+```text
+🌿 BRANCHPOINT — BRANCH SUMMARY
+🎯 Goal: the handoff button does nothing
 
-2. Установите одним из способов:
+📌 LATEST CONCLUSION:
+Fixed the silent no-op: the digest builder now keeps orphan assistant text and
+pages older history before summarizing.
 
-   - в DSH откройте страницу **Plugins** и добавьте bundle по пути к `.tgz`;
-   - или локальной ссылкой на папку с `package.json`:
-     `link:<путь-к-папке-плагина>`;
-   - или через CLI:
+✅ DONE (1):
+- silent no-op on empty digest → alert + fallback summary
 
-     ```powershell
-     & "$env:LOCALAPPDATA\Programs\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd" `
-       plugin --profile desktop add "file:C:/path/to/dsh-plugin-chat-handoff-0.2.4.tgz"
-     ```
+⏳ OPEN (1):
+- in progress: verify the button in a fresh session
 
-3. Полностью закройте и снова запустите DSH. Профиль без HMR применяет состав плагинов только при старте.
+📂 STATE:
+· changed: lib/client.js
+· files: lib/client.js, package.json
+· run: npm test
 
-## Разработка
+(Summary, not a transcript: intermediate steps are omitted. Continue from this.)
+```
 
-Сборка не нужна: `lib/client.js` — готовый ESM-бандл в конверте `window.__ModuleLoader__`, `lib/index.js` — хост-половина.
+## Install
+
+From npm:
+
+```powershell
+& "$env:LOCALAPPDATA\Programs\DeepSeek Harness\resources\runtime\cli\bin\dsh.cmd" `
+  plugin --profile desktop add dsh-plugin-branchpoint
+```
+
+Or open **Settings → Plugins** in DSH and install `dsh-plugin-branchpoint` by npm name, GitHub URL, or a `.tgz` archive.
+
+Fully quit and relaunch DSH. The desktop profile applies plugin composition at startup (it has no HMR).
+
+## Use
+
+1. Open an existing chat with at least one exchange.
+2. Click the fork icon in the header.
+3. Review the digest in the new session's composer and send it when ready.
+
+The button is hidden on a blank session: DSH hides the header actions until the session has history.
+
+## How it works
+
+- `lib/index.js` is a minimal host half (`name`, empty `apply`).
+- `lib/client.js`:
+  - `inject = ['slots', 'uiWorkspace', 'sessions']`;
+  - registers in `conversation.session.header.actions`;
+  - reads `ctx.sessions.binding(sessionId).eventSource`;
+  - `entriesToTurns` and `entriesToTools` parse messages and tool calls;
+  - `loadOlderHistory` pages older history (max 2 pages, 7 s);
+  - `buildDigest` produces the summary;
+  - `ctx.uiWorkspace.startSession(undefined, { prompt: digest, clearPreviousDraft: true })` opens the new session.
+
+No build step: `lib/client.js` is a ready ESM bundle in the `window.__ModuleLoader__` envelope.
+
+## Limitations
+
+- The digest is built from the **DSH session event log**. Reasoning and raw tool output are not summarized; only visible assistant text, tool errors, changed files and commands are used.
+- The digest framing is English. Quoted conclusions stay in the language of the chat, since they are extracted verbatim.
+- History is paged at most twice per click, so extremely long sessions may need a second click to reach the original prompt.
+- If a branch has no assistant text and no tool results, Branchpoint shows an alert and does not open an empty session.
+
+## Development
 
 ```powershell
 node --check lib/client.js
 npm pack
 ```
 
-Чтобы изменения попали в работающий DSH, перезапустите приложение (или переустановите плагин и перезапустите).
+To load local changes, install the new `.tgz` (or `link:<folder>`) and restart DSH.
 
-## Как это работает
+## License
 
-- `lib/index.js` — минимальная хост-половина (`name`, пустой `apply`).
-- `lib/client.js`:
-  - `inject = ['slots', 'uiWorkspace', 'sessions']`;
-  - регистрируется в `conversation.session.header.actions`;
-  - берёт `ctx.sessions.binding(sessionId).eventSource`;
-  - `entriesToTurns` / `entriesToTools` разбирают сообщения и вызовы инструментов;
-  - `loadOlderHistory` догружает историю;
-  - `buildDigest` собирает компактный текст;
-  - `ctx.uiWorkspace.startSession(undefined, { prompt: digest, clearPreviousDraft: true })` открывает новую сессию.
-
-## Ограничения
-
-- Дайджест строится по журналу событий **DSH-сессии**. Рассуждения (reasoning) и содержимое инструментов не пересказываются — только видимый текст ассистента, ошибки и изменённые файлы.
-- Если в ветке нет ни текстовых ответов, ни результатов инструментов, плагин показывает `alert` и не открывает пустую сессию.
-- Кнопка не отображается на пустой/новой сессии: шапка с actions скрыта, пока в сессии нет истории.
-
-## Версия
-
-0.2.4
+MIT © 2026 TimRad1
